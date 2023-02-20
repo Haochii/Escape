@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using DG.Tweening;
 
 public class GameManager : MonoBehaviour
@@ -12,6 +13,7 @@ public class GameManager : MonoBehaviour
     public Color disabledColor;
     public int wrongPasswordTimePenalty;
     public int totalSectionCnt;
+    public int preTimerLimit;
 
     [Header("Status")]
     [SerializeField]
@@ -25,6 +27,7 @@ public class GameManager : MonoBehaviour
     public AudioSource tickSfx;
     public GameObject glitch;
     public TMPro.TMP_Text escapeRoomTimer;
+    public AudioClip glitchSFX;
     public AudioClip startVoiceOver;
     public AudioClip winVoiceOver;
     public AudioClip loseVoiceOver;
@@ -47,8 +50,27 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         //SlideToPanel();
-        
+        string answer = "";
+        for (int i = 0; i < 13; i++)
+        {
+            for (int j = 0; j < 13; j++)
+            {
+                var seed = Random.Range(0, 35);
+               
+                if (seed >= 26)
+                {
+                    answer += (char)((int)'0' + (seed - 26)) + " ";
+                }
+                else
+                {
+                    answer += (char)((int)'A' + (seed)) + " ";
+                } 
+                
+            }
+        }
+        Debug.Log(answer);
     }
+
 
     // Update is called once per frame
     void Update()
@@ -63,8 +85,8 @@ public class GameManager : MonoBehaviour
         slideController.enabled = false;
 
         //Voiceover
-        voiceOver.PlayOneShot(startVoiceOver);
-
+        tickSfx.PlayOneShot(glitchSFX);
+        voiceOver.PlayDelayed(5.0f);
 
 
         //Glitch effect
@@ -72,7 +94,7 @@ public class GameManager : MonoBehaviour
         glitch.GetComponent<Animator>().Play("glitch");
 
         //enable Escape Room Panel in delay
-        StartCoroutine(delayPanel());
+        StartCoroutine(PreTimer());
         
     }
 
@@ -97,14 +119,41 @@ public class GameManager : MonoBehaviour
         tickSfx.Stop();
         voiceOver.PlayOneShot(loseVoiceOver);
     }
-
-    IEnumerator delayPanel()
+    IEnumerator PreTimer()
     {
-        yield return new WaitForSeconds(startVoiceOver.length);
+        yield return new WaitForSeconds(startVoiceOver.length + 10);
+        //After start voiceover
+        escapeRoomTimer.transform.parent.GetComponent<Image>().enabled = false;
         escapeRoomTimer.transform.parent.gameObject.SetActive(true);
-        escapeRoomTimer.transform.parent.GetComponent<CanvasGroup>().DOFade(1, 3f);
+        escapeRoomTimer.transform.parent.GetComponent<CanvasGroup>().DOFade(1, 5f);
+
+        int timer = preTimerLimit;
+        while(timer >= 0)
+        {
+            string min = Mathf.FloorToInt(timer / 60).ToString();
+            min = min.Length == 1 ? "0" + min : min;
+            string sec = (timer - Mathf.FloorToInt(timer / 60) * 60).ToString();
+            sec = sec.Length == 1 ? "0" + sec : sec;
+
+            escapeRoomTimer.text = min + ":" + sec;
+            timer--;
+            //Tick
+            tickSfx.Play();
+            yield return new WaitForSeconds(1.0f);
+        }
+        ShowEscaperoomPanel();
+        tickSfx.PlayOneShot(glitchSFX);
+
+    }
+    void ShowEscaperoomPanel()
+    {
+        //escapeRoomTimer.transform.parent.gameObject.SetActive(true);
+        //escapeRoomTimer.transform.parent.GetComponent<CanvasGroup>().DOFade(1, 5f);
         escapeRoomPanel.SetActive(true);
-        escapeRoomPanel.GetComponent<CanvasGroup>().DOFade(1,3f);
+        escapeRoomPanel.GetComponent<CanvasGroup>().DOFade(1,1f).SetEase(Ease.InOutBounce);
+        escapeRoomTimer.transform.parent.GetComponent<Image>().enabled = true;
+        escapeRoomTimer.transform.parent.GetComponent<Image>().color = Color.black;
+        escapeRoomTimer.transform.parent.GetComponent<Image>().DOColor(Color.white, 1f);
         StartCoroutine(panelCountdown());
     }
     IEnumerator panelCountdown()

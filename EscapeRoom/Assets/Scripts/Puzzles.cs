@@ -26,8 +26,14 @@ public class Puzzles : MonoBehaviour
 
     private void Awake()
     {
-        
-        
+        int cnt = 0;
+        foreach (PasswordValidation puzzle in GetComponentsInChildren<PasswordValidation>())
+        {
+            puzzle.password = passwords[cnt];
+            puzzle.puzzleManager = this;
+            puzzles.Add(puzzle.gameObject);
+            cnt++;
+        }
     }
     public void NextPuzzle()
     {
@@ -35,13 +41,11 @@ public class Puzzles : MonoBehaviour
         puzzles[currentIndex].GetComponentInChildren<TMPro.TMP_InputField>().interactable = false;
         var currentInputField = puzzles[currentIndex].GetComponentInChildren<Image>();
         currentInputField.DOColor(clearedColor, 1f);
-        currentInputField.transform.DOShakeScale(.1f);
-        if(currentIndex + 1 >= puzzles.Count)
+        currentInputField.transform.DOShakeScale(.5f);
+        if(currentIndex + 1 == puzzles.Count)
         {
-            //End this section
-            Debug.Log("Section End");
-            clearPanel.gameObject.SetActive(true);
-            clearPanel.GetComponent<CanvasGroup>().DOFade(1f,1f).OnComplete(()=>GameManager.instance.PanelSectionFinished());
+            hintPanel.GetComponentInChildren<TMPro.TMP_Text>().text = hints[currentIndex + 1];
+            hintPanel.GetComponent<CanvasGroup>().DOFade(1f, 1f).OnComplete(() => hintPanel.GetComponent<CanvasGroup>().blocksRaycasts = true);
         }
         else
         {
@@ -51,11 +55,20 @@ public class Puzzles : MonoBehaviour
             puzzles[currentIndex + 1].GetComponentInChildren<TMPro.TMP_InputField>().interactable = true;
             var nextInputField = puzzles[currentIndex + 1].GetComponentInChildren<Image>();
             nextInputField.DOColor(Color.white, 1f);
-            currentIndex++;
+            
         }
-        
-        
+        currentIndex++;
+
+
     }   
+
+    public void ClearPanel()
+    {
+        //End this section
+        Debug.Log("Section End");
+        clearPanel.gameObject.SetActive(true);
+        clearPanel.GetComponent<CanvasGroup>().DOFade(1f, 1f).OnComplete(() => GameManager.instance.PanelSectionFinished());
+    }
 
     public void WrongPassword()
     {
@@ -83,6 +96,7 @@ public class Puzzles : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         disabledColor = GameManager.instance.disabledColor;
         int cnt = 0;
         foreach (PasswordValidation puzzle in GetComponentsInChildren<PasswordValidation>())
@@ -91,13 +105,9 @@ public class Puzzles : MonoBehaviour
             {
                 puzzle.GetComponentInChildren<Image>().color = disabledColor;
             }
-            puzzle.password = passwords[cnt];
-            puzzle.puzzleManager = this;
-            puzzles.Add(puzzle.gameObject);
             cnt++;
-            
-        }
 
+        }
         currentIndex = 0;
         transform.GetChild(0).GetComponent<TMPro.TMP_Text>().text = sectionName;
         clearedColor = GameManager.instance.clearedColor;
@@ -110,6 +120,7 @@ public class Puzzles : MonoBehaviour
 
         hintPanel.GetComponentInChildren<TMPro.TMP_Text>().text = hints[currentIndex];
         hintPanel.GetComponent<CanvasGroup>().DOFade(1f, 1f).OnComplete(() => hintPanel.GetComponent<CanvasGroup>().blocksRaycasts = true);
+        hintPanel.GetComponentInChildren<HintPanel>().puzzleManager = this;
 
         
     }
