@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using DG.Tweening;
 
 public class GameManager : MonoBehaviour
@@ -75,7 +76,43 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //DEV SHORTCUT
+        if(Input.GetKeyDown(KeyCode.LeftControl) )
+        {
+            if(Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                SceneManager.LoadScene(0);
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                StopAllCoroutines();
+                escapeRoomPanel.GetComponent<CanvasGroup>().alpha = 0;
+                escapeRoomPanel.SetActive(false);
+                escapeRoomTimer.transform.parent.gameObject.SetActive(false);
+                winPanel.SetActive(false);
+                gameOverPanel.SetActive(false);
+                voiceOver.Stop();
+
+                SlideToPanel();
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                StopAllCoroutines();
+                escapeRoomPanel.GetComponent<CanvasGroup>().alpha = 0;
+                escapeRoomPanel.SetActive(false);
+                escapeRoomTimer.transform.parent.gameObject.SetActive(false);
+                winPanel.SetActive(false);
+                gameOverPanel.SetActive(false);
+                voiceOver.Stop();
+
+                escapeRoomTimer.transform.parent.GetComponent<Image>().enabled = false;
+                escapeRoomTimer.transform.parent.gameObject.SetActive(true);
+                escapeRoomTimer.transform.parent.GetComponent<CanvasGroup>().alpha = 0;
+                escapeRoomTimer.transform.parent.GetComponent<CanvasGroup>().DOFade(1, 1f);
+                ShowEscaperoomPanel();
+                tickSfx.PlayOneShot(glitchSFX);
+            }
+        }
     }
 
     public void SlideToPanel()
