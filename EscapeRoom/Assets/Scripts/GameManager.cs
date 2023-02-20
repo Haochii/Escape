@@ -16,11 +16,13 @@ public class GameManager : MonoBehaviour
     public int totalSectionCnt;
     public int preTimerLimit;
 
+
     [Header("Status")]
     [SerializeField]
     private int finishedSectionCnt;
 
     [Header("Referencess")]
+    public GameObject prePuzzle;
     public GameObject escapeRoomPanel;
     public SlideController slideController;
     public AudioSource voiceOver;
@@ -148,44 +150,62 @@ public class GameManager : MonoBehaviour
     void Win()
     {
         tickSfx.Stop();
+        StopAllCoroutines();
         voiceOver.PlayOneShot(winVoiceOver);
+        StartCoroutine(ThankYou(winVoiceOver.length));
+
     }
 
     void GameOver()
     {
         tickSfx.Stop();
+        StopAllCoroutines();
         voiceOver.PlayOneShot(loseVoiceOver);
+        StartCoroutine(ThankYou(loseVoiceOver.length));
     }
+
+    IEnumerator ThankYou(float sec)
+    {
+        yield return new WaitForSeconds(sec+5);
+        winPanel.transform.GetChild(0).GetComponent<TMPro.TMP_Text>().DOColor(Color.white, 1f);
+    }
+
     IEnumerator PreTimer()
     {
         yield return new WaitForSeconds(startVoiceOver.length + 10);
+        prePuzzle.SetActive(true);
+        prePuzzle.GetComponent<CanvasGroup>().alpha = 0;
+        prePuzzle.GetComponent<CanvasGroup>().DOFade(1, 5f);
+
         //After start voiceover
-        escapeRoomTimer.transform.parent.GetComponent<Image>().enabled = false;
-        escapeRoomTimer.transform.parent.gameObject.SetActive(true);
-        escapeRoomTimer.transform.parent.GetComponent<CanvasGroup>().DOFade(1, 5f);
-
-        int timer = preTimerLimit;
-        while(timer >= 0)
-        {
-            string min = Mathf.FloorToInt(timer / 60).ToString();
-            min = min.Length == 1 ? "0" + min : min;
-            string sec = (timer - Mathf.FloorToInt(timer / 60) * 60).ToString();
-            sec = sec.Length == 1 ? "0" + sec : sec;
-
-            escapeRoomTimer.text = min + ":" + sec;
-            timer--;
-            //Tick
-            tickSfx.Play();
-            yield return new WaitForSeconds(1.0f);
-        }
-        ShowEscaperoomPanel();
-        tickSfx.PlayOneShot(glitchSFX);
-
-    }
-    void ShowEscaperoomPanel()
-    {
+        //escapeRoomTimer.transform.parent.GetComponent<Image>().enabled = false;
         //escapeRoomTimer.transform.parent.gameObject.SetActive(true);
         //escapeRoomTimer.transform.parent.GetComponent<CanvasGroup>().DOFade(1, 5f);
+
+        //int timer = preTimerLimit;
+        //while(timer >= 0)
+        //{
+        //    string min = Mathf.FloorToInt(timer / 60).ToString();
+        //    min = min.Length == 1 ? "0" + min : min;
+        //    string sec = (timer - Mathf.FloorToInt(timer / 60) * 60).ToString();
+        //    sec = sec.Length == 1 ? "0" + sec : sec;
+
+        //    escapeRoomTimer.text = min + ":" + sec;
+        //    timer--;
+        //    Tick
+        //    tickSfx.Play();
+        //    yield return new WaitForSeconds(1.0f);
+        //}
+        //ShowEscaperoomPanel();
+
+
+    }
+    public void ShowEscaperoomPanel()
+    {
+        tickSfx.PlayOneShot(glitchSFX);
+        prePuzzle.SetActive(false);
+        escapeRoomTimer.transform.parent.gameObject.SetActive(true);
+        escapeRoomTimer.transform.parent.GetComponent<CanvasGroup>().DOFade(1, 5f);
         escapeRoomPanel.SetActive(true);
         escapeRoomPanel.GetComponent<CanvasGroup>().DOFade(1,1f).SetEase(Ease.InOutBounce);
         escapeRoomTimer.transform.parent.GetComponent<Image>().enabled = true;
@@ -211,8 +231,8 @@ public class GameManager : MonoBehaviour
 
         }
         Debug.Log("Game Over!");
-        gameOverPanel.SetActive(true);
-        gameOverPanel.GetComponent<CanvasGroup>().DOFade(1f, 3f).OnComplete(() => GameOver());
+        winPanel.SetActive(true);
+        winPanel.GetComponent<CanvasGroup>().DOFade(1f, 3f).OnComplete(() => GameOver());
         //Play voiceover
     }
 

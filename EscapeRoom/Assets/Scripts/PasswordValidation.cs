@@ -21,6 +21,7 @@ public class PasswordValidation : MonoBehaviour
 
     public void Validate(string input)
     {
+
         if(input.Length == password.Length)
         {
             if (input == password)

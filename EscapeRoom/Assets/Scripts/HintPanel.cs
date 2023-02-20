@@ -12,7 +12,7 @@ public class HintPanel : MonoBehaviour
         transform.parent.GetComponent<CanvasGroup>().blocksRaycasts = false;
         transform.parent.GetComponent<CanvasGroup>().DOFade(0, 1f);
 
-        if(puzzleManager.currentIndex == puzzleManager.puzzles.Count)
+        if(puzzleManager!=null && puzzleManager.currentIndex == puzzleManager.puzzles.Count)
         {
             puzzleManager.ClearPanel();
         }
